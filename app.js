@@ -133,10 +133,6 @@ function buildPrompt() {
   const handle = document.getElementById("f-handle").value.trim();
   const notes = document.getElementById("f-notes").value.trim();
   const award = document.getElementById("f-award").value.trim();
-  const sender = document.getElementById("f-sender").value.trim();
-  const senderLine = sender
-    ? `"${sender}" — and write the whole email in first person singular ("I", not "we") as if ${sender} is personally writing it`
-    : `"The Orzax Partnerships Team" — but still write in first person singular ("I", not "we") as if one specific person on that team is personally writing it, not a committee`;
 
   const niche = NICHES.find((n) => n.key === state.niche);
   const collabs = COLLAB_TYPES.filter((c) => state.collabTypes.includes(c.key));
@@ -166,9 +162,13 @@ function buildPrompt() {
   p += `- Use the recipient notes below for genuine personalization — don't invent facts you weren't given.\n`;
   p += `- If a trust/award note is provided, work it in briefly, in ONE sentence at most. If none is provided, do not invent or mention any award.\n`;
   p += `- Do not oversell or use hype words like "amazing", "incredible", "revolutionary".\n`;
-  p += `- Voice: write like a real brand manager personally emailing someone they respect — not like AI-generated marketing copy. Avoid every one of these dead giveaways: "I hope this email finds you well", "I wanted to reach out", "in today's fast-paced world", "synergy"/"leverage"/"elevate", stacked em-dashes, listy "Firstly/Secondly/Lastly" structure, exclamation marks, or a too-perfect uniform rhythm between sentences. Vary sentence length like a person typing quickly, not drafting a press release. It should read like it was dashed off in one sitting by someone who actually looked at the recipient's content, not templated.\n`;
+  p += `- Voice: write like a real brand manager personally emailing someone they respect — not like AI-generated marketing copy. This is the most important rule, follow it strictly:\n`;
+  p += `  - Do NOT use em dashes or en dashes (— or –) anywhere in the email. Not one. Use a period, comma, or "and"/"but" instead of a dash to join clauses.\n`;
+  p += `  - Do not use these AI-cliche phrases or anything equivalent to them: "I hope this email finds you well", "I wanted to reach out", "in today's fast-paced world", "synergy", "leverage", "elevate", "unlock", "seamless", "resonate".\n`;
+  p += `  - Do not use a listy "Firstly/Secondly/Lastly" structure, do not stack exclamation marks, and do not give every sentence the same length or the same rhythm — write the way a busy person actually types, with some short sentences and some longer ones.\n`;
+  p += `  - It should read like it was dashed off in one sitting by someone who actually looked at the recipient's content, not templated.\n`;
   p += `- Close by explicitly asking the recipient to reply with their rate / price quote for this collaboration (their standard fee, packages, or pricing structure) as the one clear next step — this is the primary goal of the email, so make the ask specific and easy to answer, not vague.\n`;
-  p += `- Sign off as ${senderLine}.\n`;
+  p += `- Sign off as "The Orzax Partnerships Team".\n`;
   p += `- Write the entire email in ${langWord}.\n`;
   p += `- Output in EXACTLY this format, nothing before or after:\n===SUBJECT===\n<subject line, under 60 characters>\n===BODY===\n<email body, plain text, no markdown>\n\n`;
   p += `--- RECIPIENT ---\n`;

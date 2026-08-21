@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orzax Outreach Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <div class="badge">🌿</div>
+      <div>
+        <h1>Orzax Outreach Studio</h1>
+        <p class="subtitle">Eczacı, sağlık içerik üreticisi ve sporculara özel cold email prompt üretici</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: input -->
+      <section class="panel">
+        <div class="eyebrow">Alıcı Profili</div>
+
+        <div class="row-2">
+          <div class="field">
+            <label>İsim (opsiyonel)</label>
+            <input type="text" id="f-name" placeholder="ör. Dr. Sarah Kim" />
+          </div>
+          <div class="field">
+            <label>Hesap / Link *</label>
+            <input type="text" id="f-handle" placeholder="@handle veya profil linki" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Platform</label>
+          <div class="chips" id="chips-platform"></div>
+        </div>
+
+        <div class="field">
+          <label>Uzmanlık / Niş *</label>
+          <div class="chips" id="chips-niche"></div>
+        </div>
+
+        <div class="field">
+          <label>İş Birliği Türü *</label>
+          <div class="chips" id="chips-collab"></div>
+        </div>
+
+        <div class="field">
+          <label>Notlar (opsiyonel)</label>
+          <textarea id="f-notes" rows="3" placeholder="İçerik tarzı, takipçi sayısı, öne çıkan bir paylaşım vb. — bu araç hesabı otomatik taramaz, birkaç gerçek detay ekleyin."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Güven / Ödül Notu (opsiyonel)</label>
+          <input type="text" id="f-award" placeholder="ör. 2024 Türkiye'de Yılın İtibarlı Markası ödülü" />
+        </div>
+
+        <div class="field">
+          <label>Dil</label>
+          <div class="chips" id="chips-language"></div>
+        </div>
+
+        <button id="btn-generate" class="btn-primary">1. Prompt Oluştur</button>
+        <p id="validation-msg" class="hint">Hesap, niş ve iş birliği türü zorunlu alanlar.</p>
+      </section>
+
+      <!-- RIGHT: prompt + response -->
+      <section class="panel">
+        <div class="eyebrow">2. Claude'a Yapıştırın</div>
+        <div id="prompt-empty" class="empty-state">
+          <div class="empty-icon">🧪</div>
+          <p>Soldaki formu doldurup "Prompt Oluştur"a basın. Ardından çıkan metni kopyalayıp <strong>yeni bir Claude.ai sohbetine</strong> yapıştırın (mevcut üyeliğinizle, ekstra ücret yok).</p>
+        </div>
+        <div id="prompt-result" class="hidden">
+          <textarea id="prompt-output" rows="10" readonly></textarea>
+          <div class="btn-row">
+            <button id="btn-copy-prompt" class="btn-primary">Promptu Kopyala</button>
+            <a href="https://claude.ai" target="_blank" rel="noopener" class="btn-secondary">Claude.ai'yi Aç</a>
+          </div>
+        </div>
+
+        <div class="tear-line"></div>
+
+        <div class="eyebrow">3. Cevabı Buraya Yapıştırın</div>
+        <textarea id="f-response" rows="6" placeholder="Claude'un ürettiği maili buraya yapıştırın..."></textarea>
+        <button id="btn-save" class="btn-secondary full">Ayır ve Kaydet</button>
+
+        <div id="parsed-result" class="hidden parsed-card">
+          <label class="mini-label">KONU</label>
+          <div class="copy-row">
+            <input type="text" id="parsed-subject" />
+            <button class="btn-icon" data-copy-target="parsed-subject">📋</button>
+          </div>
+          <label class="mini-label">GÖVDE</label>
+          <div class="copy-row">
+            <textarea id="parsed-body" rows="7"></textarea>
+            <button class="btn-icon" data-copy-target="parsed-body">📋</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="drafts-section">
+      <div class="eyebrow">Kayıtlı Taslaklar</div>
+      <div id="drafts-list" class="drafts-grid"></div>
+      <p id="drafts-empty" class="hint">Henüz kayıtlı taslak yok.</p>
+    </section>
+
+    <p class="footer-note">Taslaklar yalnızca bu tarayıcıda saklanır (localStorage). Gönderim öncesi her maili gözden geçirin.</p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

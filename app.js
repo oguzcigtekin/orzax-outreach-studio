@@ -50,6 +50,8 @@ const COLLAB_TYPES = [
     angle: "Orzax wants a recurring, multi-month ambassador relationship, not a one-off post. Emphasize ongoing collaboration, consistency, and deeper brand integration." },
   { key: "affiliate", tr: "Affiliate / Komisyonlu", en: "Affiliate / Commission-based",
     angle: "This is a trackable-link, commission-based arrangement. Emphasize easy setup and that earnings scale with their own audience's trust in them." },
+  { key: "ugc", tr: "UGC / İçerik Üretimi", en: "UGC / Content Creation",
+    angle: "Orzax wants raw user-generated-style content (e.g. unboxing, routine, honest review clips) primarily for Orzax's own ads and channels, not necessarily posted on the creator's own page. Emphasize that this is a content-for-fee deal focused on authentic, unpolished footage rather than a polished sponsored post." },
 ];
 
 const LANGUAGES = [
@@ -62,7 +64,7 @@ const STORAGE_KEY = "orzax_outreach_drafts";
 const state = {
   platform: "instagram",
   niche: "",
-  collabType: "",
+  collabTypes: [],
   language: "EN",
 };
 
@@ -81,8 +83,29 @@ function renderChips(containerId, options, stateKey) {
       if (stateKey === "language") {
         renderChips("chips-platform", PLATFORMS, "platform");
         renderChips("chips-niche", NICHES, "niche");
-        renderChips("chips-collab", COLLAB_TYPES, "collabType");
+        renderChipsMulti("chips-collab", COLLAB_TYPES, "collabTypes");
       }
+    });
+    el.appendChild(btn);
+  });
+}
+
+/* ---------- multi-select chip rendering (collaboration types) ---------- */
+function renderChipsMulti(containerId, options, stateKey) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  options.forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    const isActive = state[stateKey].includes(opt.key);
+    btn.className = "chip" + (isActive ? " active" : "");
+    btn.textContent = state.language === "TR" ? opt.tr : opt.en;
+    btn.addEventListener("click", () => {
+      const list = state[stateKey];
+      const idx = list.indexOf(opt.key);
+      if (idx === -1) list.push(opt.key);
+      else list.splice(idx, 1);
+      renderChipsMulti(containerId, options, stateKey);
     });
     el.appendChild(btn);
   });
@@ -90,7 +113,7 @@ function renderChips(containerId, options, stateKey) {
 
 renderChips("chips-platform", PLATFORMS, "platform");
 renderChips("chips-niche", NICHES, "niche");
-renderChips("chips-collab", COLLAB_TYPES, "collabType");
+renderChipsMulti("chips-collab", COLLAB_TYPES, "collabTypes");
 renderChips("chips-language", LANGUAGES, "language");
 
 /* ---------- prompt builder ---------- */
@@ -101,15 +124,25 @@ function buildPrompt() {
   const award = document.getElementById("f-award").value.trim();
 
   const niche = NICHES.find((n) => n.key === state.niche);
-  const collab = COLLAB_TYPES.find((c) => c.key === state.collabType);
+  const collabs = COLLAB_TYPES.filter((c) => state.collabTypes.includes(c.key));
   const platformLabel = PLATFORMS.find((p) => p.key === state.platform);
 
   const langWord = state.language === "TR" ? "Turkish" : "English";
 
+  let collabGuidance;
+  if (collabs.length === 0) {
+    collabGuidance = "Open to discussing format.";
+  } else if (collabs.length === 1) {
+    collabGuidance = collabs[0].angle;
+  } else {
+    collabGuidance = `This is a combined/hybrid offer covering ${collabs.length} collaboration types at once — mention all of them briefly rather than picking just one:\n`
+      + collabs.map((c) => `- ${c.en}: ${c.angle}`).join("\n");
+  }
+
   let p = `You are a partnerships specialist writing a single cold outreach email on behalf of Orzax, a pharmacist-founded natural supplement brand, to one specific influencer/creator.\n\n`;
   p += `ORZAX BRAND FACTS (use only what's relevant, do not list everything):\n${ORZAX_FACTS}\n\n`;
   p += `RECIPIENT NICHE GUIDANCE:\n${niche ? niche.angle : "General wellness audience."}\n\n`;
-  p += `COLLABORATION TYPE GUIDANCE:\n${collab ? collab.angle : "Open to discussing format."}\n\n`;
+  p += `COLLABORATION TYPE GUIDANCE:\n${collabGuidance}\n\n`;
   p += `RULES:\n`;
   p += `- Write ONE short, warm, non-generic cold email. 120-180 words for the body.\n`;
   p += `- Reference the recipient's platform/niche naturally, and their name if given — do not use bracket placeholders like [First Name].\n`;
@@ -133,10 +166,10 @@ function buildPrompt() {
 /* ---------- generate button ---------- */
 document.getElementById("btn-generate").addEventListener("click", () => {
   const handle = document.getElementById("f-handle").value.trim();
-  const valid = handle && state.niche && state.collabType;
+  const valid = handle && state.niche && state.collabTypes.length > 0;
   const msg = document.getElementById("validation-msg");
   if (!valid) {
-    msg.textContent = "Hesap, niş ve iş birliği türü zorunlu alanlar.";
+    msg.textContent = "Hesap, niş ve en az bir iş birliği türü zorunlu alanlar.";
     msg.style.color = "var(--clay)";
     return;
   }
@@ -202,7 +235,7 @@ document.getElementById("btn-save").addEventListener("click", () => {
     handle: document.getElementById("f-handle").value.trim(),
     platform: state.platform,
     niche: state.niche,
-    collabType: state.collabType,
+    collabTypes: state.collabTypes.slice(),
     language: state.language,
     subject: parsed.subject,
     body: parsed.body,
@@ -253,7 +286,10 @@ function renderDrafts() {
 
   drafts.forEach((d) => {
     const niche = NICHES.find((n) => n.key === d.niche);
-    const collab = COLLAB_TYPES.find((c) => c.key === d.collabType);
+    const collabKeys = d.collabTypes || (d.collabType ? [d.collabType] : []);
+    const collabLabel = COLLAB_TYPES.filter((c) => collabKeys.includes(c.key))
+      .map((c) => (d.language === "TR" ? c.tr : c.en))
+      .join(" + ");
     const card = document.createElement("div");
     card.className = "draft-card";
     card.innerHTML = `
@@ -261,7 +297,7 @@ function renderDrafts() {
         <p class="name">${escapeHtml(d.name || d.handle)}</p>
         <button class="delete-btn" title="Sil">🗑</button>
       </div>
-      <p class="meta">${escapeHtml(d.handle)} · ${niche ? escapeHtml(d.language === "TR" ? niche.tr : niche.en) : ""} · ${collab ? escapeHtml(d.language === "TR" ? collab.tr : collab.en) : ""}</p>
+      <p class="meta">${escapeHtml(d.handle)} · ${niche ? escapeHtml(d.language === "TR" ? niche.tr : niche.en) : ""} · ${escapeHtml(collabLabel)}</p>
       <p class="subject">${escapeHtml(d.subject)}</p>
       <button class="copy-btn">📋 Kopyala</button>
     `;

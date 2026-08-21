@@ -290,6 +290,16 @@ textarea { resize: vertical; line-height: 1.5; }
   overflow: hidden;
 }
 
+.draft-card .quote-input {
+  font-size: 12px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+
+.draft-card .mini-label {
+  margin: 0 0 4px;
+}
+
 .draft-card .delete-btn {
   background: none;
   border: none;

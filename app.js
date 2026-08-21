@@ -162,7 +162,7 @@ function buildPrompt() {
   p += `- Use the recipient notes below for genuine personalization — don't invent facts you weren't given.\n`;
   p += `- If a trust/award note is provided, work it in briefly, in ONE sentence at most. If none is provided, do not invent or mention any award.\n`;
   p += `- Do not oversell or use hype words like "amazing", "incredible", "revolutionary".\n`;
-  p += `- Close with one clear, low-friction next step.\n`;
+  p += `- Close by explicitly asking the recipient to reply with their rate / price quote for this collaboration (their standard fee, packages, or pricing structure) as the one clear next step — this is the primary goal of the email, so make the ask specific and easy to answer, not vague.\n`;
   p += `- Sign off as "The Orzax Partnerships Team" unless told otherwise.\n`;
   p += `- Write the entire email in ${langWord}.\n`;
   p += `- Output in EXACTLY this format, nothing before or after:\n===SUBJECT===\n<subject line, under 60 characters>\n===BODY===\n<email body, plain text, no markdown>\n\n`;
@@ -254,6 +254,7 @@ document.getElementById("btn-save").addEventListener("click", () => {
     language: state.language,
     subject: parsed.subject,
     body: parsed.body,
+    quote: "",
   };
   drafts.unshift(draft);
   saveDrafts(drafts.slice(0, 50));
@@ -315,12 +316,22 @@ function renderDrafts() {
       </div>
       <p class="meta">${escapeHtml(d.handle)} · ${market ? escapeHtml(market.en) : ""} · ${niche ? escapeHtml(d.language === "TR" ? niche.tr : niche.en) : ""} · ${escapeHtml(collabLabel)}</p>
       <p class="subject">${escapeHtml(d.subject)}</p>
+      <label class="mini-label">FİYAT TEKLİFİ</label>
+      <input type="text" class="quote-input" placeholder="ör. $300 / post" value="${escapeHtml(d.quote || "")}" />
       <button class="copy-btn">📋 Kopyala</button>
     `;
     card.querySelector(".delete-btn").addEventListener("click", () => {
       const updated = loadDrafts().filter((x) => x.id !== d.id);
       saveDrafts(updated);
       renderDrafts();
+    });
+    card.querySelector(".quote-input").addEventListener("change", (e) => {
+      const updated = loadDrafts();
+      const target = updated.find((x) => x.id === d.id);
+      if (target) {
+        target.quote = e.target.value.trim();
+        saveDrafts(updated);
+      }
     });
     card.querySelector(".copy-btn").addEventListener("click", async (e) => {
       const ok = await copyText(`Subject: ${d.subject}\n\n${d.body}`);

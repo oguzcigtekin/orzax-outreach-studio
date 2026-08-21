@@ -59,10 +59,18 @@ const LANGUAGES = [
   { key: "TR", tr: "TR", en: "TR" },
 ];
 
+const MARKETS = [
+  { key: "usa", tr: "ABD", en: "USA",
+    angle: "This outreach targets the US market. Use American English spelling and conventions (e.g. \"color\", \"favorite\") and USD ($) for any pricing/commission figures. Lean on the FDA-registered manufacturing facility as a primary trust signal alongside GMP/ISO certifications — US audiences recognize FDA registration specifically." },
+  { key: "uk", tr: "İngiltere", en: "UK",
+    angle: "This outreach targets the UK market. Use British English spelling and conventions (e.g. \"colour\", \"favourite\") and GBP (£) for any pricing/commission figures. Do not lean on FDA-registered as the main trust signal since it's a US-specific regulator and may read as irrelevant or confusing to a UK recipient — instead emphasize the ISO 9001/22000 and GMP certifications, which are recognized international quality marks in the UK." },
+];
+
 const STORAGE_KEY = "orzax_outreach_drafts";
 
 const state = {
   platform: "instagram",
+  market: "usa",
   niche: "",
   collabTypes: [],
   language: "EN",
@@ -82,6 +90,7 @@ function renderChips(containerId, options, stateKey) {
       renderChips(containerId, options, stateKey);
       if (stateKey === "language") {
         renderChips("chips-platform", PLATFORMS, "platform");
+        renderChips("chips-market", MARKETS, "market");
         renderChips("chips-niche", NICHES, "niche");
         renderChipsMulti("chips-collab", COLLAB_TYPES, "collabTypes");
       }
@@ -99,7 +108,8 @@ function renderChipsMulti(containerId, options, stateKey) {
     btn.type = "button";
     const isActive = state[stateKey].includes(opt.key);
     btn.className = "chip" + (isActive ? " active" : "");
-    btn.textContent = state.language === "TR" ? opt.tr : opt.en;
+    const label = state.language === "TR" ? opt.tr : opt.en;
+    btn.textContent = isActive ? `✓ ${label}` : label;
     btn.addEventListener("click", () => {
       const list = state[stateKey];
       const idx = list.indexOf(opt.key);
@@ -112,6 +122,7 @@ function renderChipsMulti(containerId, options, stateKey) {
 }
 
 renderChips("chips-platform", PLATFORMS, "platform");
+renderChips("chips-market", MARKETS, "market");
 renderChips("chips-niche", NICHES, "niche");
 renderChipsMulti("chips-collab", COLLAB_TYPES, "collabTypes");
 renderChips("chips-language", LANGUAGES, "language");
@@ -126,6 +137,7 @@ function buildPrompt() {
   const niche = NICHES.find((n) => n.key === state.niche);
   const collabs = COLLAB_TYPES.filter((c) => state.collabTypes.includes(c.key));
   const platformLabel = PLATFORMS.find((p) => p.key === state.platform);
+  const market = MARKETS.find((m) => m.key === state.market);
 
   const langWord = state.language === "TR" ? "Turkish" : "English";
 
@@ -141,6 +153,7 @@ function buildPrompt() {
 
   let p = `You are a partnerships specialist writing a single cold outreach email on behalf of Orzax, a pharmacist-founded natural supplement brand, to one specific influencer/creator.\n\n`;
   p += `ORZAX BRAND FACTS (use only what's relevant, do not list everything):\n${ORZAX_FACTS}\n\n`;
+  p += `TARGET MARKET GUIDANCE:\n${market ? market.angle : "No specific market — use neutral international English."}\n\n`;
   p += `RECIPIENT NICHE GUIDANCE:\n${niche ? niche.angle : "General wellness audience."}\n\n`;
   p += `COLLABORATION TYPE GUIDANCE:\n${collabGuidance}\n\n`;
   p += `RULES:\n`;
@@ -157,6 +170,7 @@ function buildPrompt() {
   p += `Handle/link: ${handle || "(not given)"}\n`;
   if (name) p += `Name: ${name}\n`;
   p += `Platform: ${platformLabel ? platformLabel.en : state.platform}\n`;
+  p += `Market: ${market ? market.en : state.market}\n`;
   if (notes) p += `Notes: ${notes}\n`;
   if (award) p += `Trust/award note to optionally include: ${award}\n`;
   p += `\nWrite the cold email now.`;
@@ -234,6 +248,7 @@ document.getElementById("btn-save").addEventListener("click", () => {
     name: document.getElementById("f-name").value.trim(),
     handle: document.getElementById("f-handle").value.trim(),
     platform: state.platform,
+    market: state.market,
     niche: state.niche,
     collabTypes: state.collabTypes.slice(),
     language: state.language,
@@ -286,6 +301,7 @@ function renderDrafts() {
 
   drafts.forEach((d) => {
     const niche = NICHES.find((n) => n.key === d.niche);
+    const market = MARKETS.find((m) => m.key === d.market);
     const collabKeys = d.collabTypes || (d.collabType ? [d.collabType] : []);
     const collabLabel = COLLAB_TYPES.filter((c) => collabKeys.includes(c.key))
       .map((c) => (d.language === "TR" ? c.tr : c.en))
@@ -297,7 +313,7 @@ function renderDrafts() {
         <p class="name">${escapeHtml(d.name || d.handle)}</p>
         <button class="delete-btn" title="Sil">🗑</button>
       </div>
-      <p class="meta">${escapeHtml(d.handle)} · ${niche ? escapeHtml(d.language === "TR" ? niche.tr : niche.en) : ""} · ${escapeHtml(collabLabel)}</p>
+      <p class="meta">${escapeHtml(d.handle)} · ${market ? escapeHtml(market.en) : ""} · ${niche ? escapeHtml(d.language === "TR" ? niche.tr : niche.en) : ""} · ${escapeHtml(collabLabel)}</p>
       <p class="subject">${escapeHtml(d.subject)}</p>
       <button class="copy-btn">📋 Kopyala</button>
     `;
